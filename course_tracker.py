@@ -1,6 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
-import re, os, time, json, requests
+import re, os, sys, time, json, requests
+from getch import pause
+from os import listdir
+from os.path import isfile, join
 
 # Open the browser with headless mode
 url = "https://course.ncku.edu.tw/index.php?c=qry_all"
@@ -15,7 +18,16 @@ chrome_options.add_argument('--disable-gpu')
 chrome_options.add_argument('--disable-dev-shm-usage') 
 chrome_options.add_argument('--no-sandbox') 
 chrome_options.add_argument('--ignore-certificate-errors') 
-browser = webdriver.Chrome(chrome_options=chrome_options)
+
+# Check which version of chromedriver can be used
+versions = [f for f in listdir("./chromedriver") if isfile(join("./chromedriver", f))]
+for version in versions:
+    try:
+        chromedriver_path = "./chromedriver/"+version
+        browser = webdriver.Chrome(executable_path=chromedriver_path, chrome_options=chrome_options)
+        break
+    except:
+        continue
 browser.get(url)
 
 def lineNotifyMessage(token, msg):
@@ -88,7 +100,11 @@ def main():
     with open("dept_lookup.txt") as f:
         department_no = json.loads(f.read())
     os.system('cls')
-    count = input('欲追蹤的數目: ')
+    try:
+        count = input('欲追蹤的數目: ')
+    except KeyboardInterrupt:
+        pause('按任意一鍵離開程式......')
+        return
     # Enter the courses code that user want to track with
     for index in range(int(count)):
         try:
@@ -97,13 +113,20 @@ def main():
             search_dept_name = department_no[search_dept_no]
             search_list.append(search)
             search_dept_name_list.append(search_dept_name)
+        except KeyboardInterrupt:
+            pause('按任意一鍵離開程式......')
+            return
         except:
             os.system('cls')
             print("\r{0}\n".format('找不到對應系所資料...'), end="")
-            input('按任意一鍵離開程式......')
+            pause('按任意一鍵離開程式......')
             return
     # Enter the LINE token for LINE Notify
-    token = input('LINE權杖: ')
+    try:
+        token = input('LINE權杖: ')
+    except KeyboardInterrupt:
+        pause('按任意一鍵離開程式......')
+        return
     # Loop forever except the keyboard interruption or there has left for searching courses
     while True:
         try:
@@ -123,7 +146,7 @@ def main():
                         print ("\r{0}\n".format('Ctrl-C終止追蹤'), end="")
                     else:
                         print ("\r{0}\n".format('追蹤過程出現錯誤'), end="")
-                    input('按任意一鍵離開程式......')
+                    pause('按任意一鍵離開程式......')
                     return
                 else:
                     output += str(search_result) + '\n' + str(time.ctime()) + '\n'
@@ -136,13 +159,15 @@ def main():
                             '\n課程代號: '+search_list[index].split('-')[1]+'\n選課連結: https://course.ncku.edu.tw/index.php?c=auth'
                     if lineNotifyMessage(token, message) != 200:
                         print ("{0}\n".format('LINE token有誤'), end="")
-                    input('按任意一鍵離開程式......')
+                    else:
+                        print("{0}\n".format('有餘額囉 : )'), end="")
                     browser.close()
+                    pause('按任意一鍵離開程式......')
                     return
             time.sleep(.5)
         except KeyboardInterrupt:
             print ("\r{0}\n".format('終止追蹤'), end="")
-            input('按任意一鍵離開程式......')
+            pause('按任意一鍵離開程式......')
             return            
     # Close the browser
     browser.close()

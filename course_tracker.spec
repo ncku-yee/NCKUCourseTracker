@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['course_tracker.py'],
-             pathex=['D:\\課程追蹤\\新版課程追蹤\\Course Tracker(New)'],
+             pathex=['D:\\NCKUCourseTracker'],
              binaries=[],
              datas=[],
              hiddenimports=[],
